@@ -16,15 +16,17 @@ function init() {
 
     scene = new THREE.Scene();
 
+    const basePath = document.location.hostname.includes('localhost') ? 'http://localhost:3000' : './assets/';
+
     new RGBELoader()
-        .load('http://localhost:3000/royal_esplanade_1k.hdr', function (texture) {
+        .load(`${basePath}/royal_esplanade_1k.hdr`, function (texture) {
             texture.mapping = THREE.EquirectangularReflectionMapping;
             scene.environment = texture;
             render();
 
             const roughnessMipmapper = new RoughnessMipmapper(renderer);
             const loader = new GLTFLoader()//.setPath('models/');
-            loader.load('http://localhost:3000/Eye.glb', function (glb) {
+            loader.load(`${basePath}/Eye.glb`, function (glb) {
                 glb.scene.traverse(function (child) {
                     if (child.isMesh) {
                         roughnessMipmapper.generateMipmaps(child.material);
