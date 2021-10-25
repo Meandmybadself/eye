@@ -30,7 +30,7 @@ function init() {
                 glb.scene.traverse(function (child) {
                     if (child.isMesh) {
                         roughnessMipmapper.generateMipmaps(child.material);
-                    }
+                    } ``
                 });
                 scene.add(glb.scene);
                 roughnessMipmapper.dispose();
@@ -50,6 +50,16 @@ function init() {
 
     window.addEventListener('resize', onWindowResize);
     window.addEventListener('click', toggleFullScreen)
+
+    setTimeout(() => blink(), randomBetween(1000, 5000))
+}
+
+function blink() {
+    document.querySelectorAll('.eyelid').forEach(el => el.classList.add('eyelid--closed'))
+    setTimeout(() => {
+        document.querySelectorAll('.eyelid').forEach(el => el.classList.remove('eyelid--closed'))
+        setTimeout(() => blink(), randomBetween(10000, 20000))
+    }, 100)
 }
 
 function toggleFullScreen() {
@@ -73,13 +83,13 @@ function deg2rad(degrees) {
 
 function rotateEye() {
     const eye = scene.getObjectByName('Eye_Blue_01');
-    const amount = 30
-    const x = deg2rad(randomBetween(0, 20))
+    const amount = 15
+    const x = deg2rad(randomBetween(0, 15))
     const y = deg2rad(randomBetween(-amount, amount))
-    const time = randomBetween(2, 8)
+    const time = randomBetween(0.1, 0.5)
     gsap.to(eye.rotation, time, {
         x, y, onComplete: () => {
-            setTimeout(() => rotateEye(), 2000)
+            setTimeout(() => rotateEye(), randomBetween(1000, 8000))
         },
         ease: "power3.out"
     })
