@@ -59,7 +59,7 @@ function blink() {
     setTimeout(() => {
         document.querySelectorAll('.eyelid').forEach(el => el.classList.remove('eyelid--closed'))
         setTimeout(() => blink(), randomBetween(10000, 20000))
-    }, 100)
+    }, 200)
 }
 
 function toggleFullScreen() {
