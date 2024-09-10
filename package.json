@@ -1,19 +1,21 @@
 {
-  "name": "eyeball2",
+  "name": "browser-eyeball",
   "version": "1.0.0",
-  "description": "",
+  "description": "A 3d eyeball in the browser",
   "scripts": {
-    "dev": "parcel serve index.html",
-    "build": "parcel build index.html --dist-dir public && mv ./assets ./public/"
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "parcel": "^2.0.0"
+    "@vitejs/plugin-react": "^4.2.1",
+    "vite": "^5.0.0"
   },
   "dependencies": {
-    "gsap": "^3.8.0",
+    "gsap": "^3.12.5",
     "three": "^0.133.1"
   }
 }
