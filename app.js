@@ -7,6 +7,7 @@ import gsap from 'gsap'
 let camera, scene, renderer;
 let controller;
 let eye;
+let lastYButtonState = false;
 
 function init() {
   const container = document.createElement('div');
@@ -52,84 +53,71 @@ function init() {
   container.appendChild(renderer.domElement);
 
   window.addEventListener('resize', onWindowResize);
-  // window.addEventListener('click', toggleFullScreen);
   
-  // Add button for Bluetooth connection
-  const connectButton = document.createElement('button');
-  connectButton.textContent = 'Connect Nintendo Switch Controller';
-  connectButton.style.position = 'absolute';
-  connectButton.style.top = '10px';
-  connectButton.style.left = '10px';
-  connectButton.addEventListener('click', connectBluetoothDevice);
-  document.body.appendChild(connectButton);
+  // Add button to check for controller
+  const checkControllerButton = document.createElement('button');
+  checkControllerButton.textContent = 'Check for Xbox Controller';
+  checkControllerButton.style.position = 'absolute';
+  checkControllerButton.style.top = '10px';
+  checkControllerButton.style.left = '10px';
+  checkControllerButton.addEventListener('click', checkForController);
+  document.body.appendChild(checkControllerButton);
 
-  setTimeout(() => blink(), randomBetween(1000, 5000));
+  // Listen for gamepad connections
+  window.addEventListener("gamepadconnected", handleGamepadConnected);
+  window.addEventListener("gamepaddisconnected", handleGamepadDisconnected);
 }
 
-function blink() {
-  document.querySelectorAll('.eyelid').forEach(el => el.classList.add('eyelid--closed'));
-  setTimeout(() => {
-    document.querySelectorAll('.eyelid').forEach(el => el.classList.remove('eyelid--closed'));
-    setTimeout(() => blink(), randomBetween(10000, 20000));
-  }, 200);
+function handleGamepadConnected(event) {
+  console.log("Gamepad connected:", event.gamepad);
+  controller = event.gamepad;
 }
 
-function toggleFullScreen() {
-  if (!document.fullscreenElement) {
-    document.documentElement.requestFullscreen();
-  } else {
-    if (document.exitFullscreen) {
-      document.exitFullscreen();
+function handleGamepadDisconnected(event) {
+  console.log("Gamepad disconnected:", event.gamepad);
+  controller = null;
+}
+
+function checkForController() {
+  const gamepads = navigator.getGamepads();
+  for (const gamepad of gamepads) {
+    if (gamepad && (gamepad.id.includes('Xbox') || gamepad.id.includes('X-Box'))) {
+      console.log("Xbox controller found:", gamepad);
+      controller = gamepad;
+      return;
     }
   }
-}
-
-function randomBetween(min, max) {
-  return Math.random() * (max - min + 1) + min;
-}
-
-function deg2rad(degrees) {
-  return degrees * Math.PI / 180;
+  console.log("No Xbox controller found. Please connect your controller and try again.");
 }
 
 function rotateEye() {
-  if (!eye) return;
+  if (!eye || !controller) return;
   
+  // Refresh the gamepad state
+  controller = navigator.getGamepads()[controller.index];
   
-    
+  if (controller.axes.length >= 4) {
+    // Xbox controller uses axes[2] for right stick X and axes[3] for right stick Y
+    const analogX = controller.axes[2];
+    const analogY = controller.axes[3];
+    const amount = 45;
 
-  if (controller && controller.axes.length >= 2) {
-
-    // console.log(controller);
-    // console.log(controller.axes);
-
-    const analogX = controller.axes[0];
-    const analogY = controller.axes[1];
-    const amount = 15;
-
+    // Invert Y axis for more intuitive control
     const x = deg2rad(analogY * amount);
-    const y = deg2rad(-analogX * amount);
+    const y = deg2rad(analogX * amount);
     
-    console.log(controller)
-
-    gsap.to(eye.rotation, 0.1, {
+    gsap.to(eye.rotation, 0.4, {
       x, y,
-      ease: "power3.out"
-    });
-  } else {
-    const amount = 15;
-    const x = deg2rad(randomBetween(0, 15));
-    const y = deg2rad(randomBetween(-amount, amount));
-    const time = randomBetween(0.1, 0.5);
-    
-    gsap.to(eye.rotation, time, {
-      x, y,
-      onComplete: () => {
-        setTimeout(() => rotateEye(), randomBetween(1000, 8000));
-      },
       ease: "power3.out"
     });
   }
+
+  // Check Y button (index 3) for blinking
+  const yButtonPressed = controller.buttons[3].pressed;
+  if (yButtonPressed && !lastYButtonState) {
+    blink();
+  }
+  lastYButtonState = yButtonPressed;
 }
 
 function onWindowResize() {
@@ -148,26 +136,15 @@ function render() {
   }
 }
 
-async function connectBluetoothDevice() {
-  try {
-    const device = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: 'Pro Controller' }],
-    });
+function deg2rad(degrees) {
+  return degrees * Math.PI / 180;
+}
 
-    console.log('Bluetooth device connected:', device);
-
-    window.addEventListener("gamepadconnected", (e) => {
-      console.log("Gamepad connected:", e.gamepad);
-      controller = e.gamepad;
-    });
-
-    window.addEventListener("gamepaddisconnected", (e) => {
-      console.log("Gamepad disconnected:", e.gamepad);
-      controller = null;
-    });
-  } catch (error) {
-    console.error('Error connecting to Bluetooth device:', error);
-  }
+function blink() {
+  document.querySelectorAll('.eyelid').forEach(el => el.classList.add('eyelid--closed'));
+  setTimeout(() => {
+    document.querySelectorAll('.eyelid').forEach(el => el.classList.remove('eyelid--closed'));
+  }, 200);
 }
 
 init();
